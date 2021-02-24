@@ -140,11 +140,14 @@ int main( int argc, char** argv )
         string nyu_class_name;
         string scene_class_name = scenenn_data["nyu_class"];
 
-        if (scene_class_name.length()==0 or scene_class_name=="prop"){
+        if (scene_class_name.length()==0 or scene_class_name=="prop")
             nyu_class_name = "otherprop";
-        }else{
+
+        if (scene_class_name=="fridge")
+            nyu_class_name="refridgerator";
+
+        if (nyu_class_name.length()==0)
             nyu_class_name = scenenn_data["nyu_class"];
-        }
 
         vector<string> nyu_colors = splitString(nyu_color_xml[nyu_class_name]["color"], " ");
         p.r = atoi(nyu_colors[0].c_str());
