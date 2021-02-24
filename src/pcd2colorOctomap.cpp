@@ -12,6 +12,9 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
+#include<cstring>
+#include<vector>
+
 //octomap 
 #include <octomap/octomap.h>
 #include <octomap/ColorOcTree.h>
@@ -61,11 +64,41 @@ map <string, map<string, string>> parse_nyu_xml() {
         {
             labelContent[static_cast<string>(attr.name())] = static_cast<string>(attr.value());
         }
-        XmlContent[labelContent["color"]] = labelContent;
+        XmlContent[labelContent["text"]] = labelContent;
     }
 
 //    cout << XmlContent["215 179 119"]["color"] << endl;
     return XmlContent;
+}
+
+vector<string> splitString(const string& str,const string& pattern)
+{
+    vector<string> result;
+    //string::size_type型別，left：左邊界位置  right：右邊界位置
+    string::size_type left, right;
+
+    right = str.find(pattern);
+    left = 0;
+
+    while(right != string::npos)
+    {
+        //以免字串首部就是分割依據，壓入長度為0的字串
+        if(right-left)
+        {
+            //壓入起始位置為left，長度為（right-left）的字串
+            result.push_back(str.substr(left, right-left));
+        }
+        left = right + pattern.size();   //右邊界右移分割依據的長度，作為新的左邊界
+        right = str.find(pattern, left);   //從left這個位置開始find
+    }
+
+    //退出迴圈時，左邊界不是最後一個元素
+    if(left != str.length())
+    {
+        result.push_back(str.substr(left));
+    }
+
+    return result;
 }
 
 
@@ -100,7 +133,23 @@ int main( int argc, char** argv )
     // 设置颜色
     for (auto p:cloud.points)
     {
-        vector<long> voxelColorRGB1 = {static_cast<long>(p.r),static_cast<long>(p.g),static_cast<long>(p.b)};
+//        vector<long> voxelColorRGB1 = {static_cast<long>(p.r),static_cast<long>(p.g),static_cast<long>(p.b)};
+        string colorIndex = to_string(p.r) + " " + to_string(p.g) + " " + to_string(p.b);
+        map<string, string>scenenn_data = scene_nn_xml[colorIndex];
+
+        string nyu_class_name;
+        string scene_class_name = scenenn_data["nyu_class"];
+
+        if (scene_class_name.length()==0 or scene_class_name=="prop"){
+            nyu_class_name = "otherprop";
+        }else{
+            nyu_class_name = scenenn_data["nyu_class"];
+        }
+
+        vector<string> nyu_colors = splitString(nyu_color_xml[nyu_class_name]["color"], " ");
+        p.r = atoi(nyu_colors[0].c_str());
+        p.g = atoi(nyu_colors[1].c_str());
+        p.b = atoi(nyu_colors[2].c_str());
         tree.integrateNodeColor( p.x, p.y, p.z, p.r, p.g, p.b );
     }
 
@@ -112,6 +161,7 @@ int main( int argc, char** argv )
 
     return 0;
 }
+
 
 
 
