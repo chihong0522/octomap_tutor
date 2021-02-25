@@ -150,9 +150,9 @@ int main( int argc, char** argv )
             nyu_class_name = scenenn_data["nyu_class"];
 
         vector<string> nyu_colors = splitString(nyu_color_xml[nyu_class_name]["color"], " ");
-        p.r = atoi(nyu_colors[0].c_str());
+        p.b = atoi(nyu_colors[0].c_str());
         p.g = atoi(nyu_colors[1].c_str());
-        p.b = atoi(nyu_colors[2].c_str());
+        p.r = atoi(nyu_colors[2].c_str());
         tree.integrateNodeColor( p.x, p.y, p.z, p.r, p.g, p.b );
     }
 
